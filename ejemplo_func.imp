@@ -1,0 +1,6 @@
+x = 12;
+y = 5;
+z = ifexp(x > y*2,100,200)+2;
+print(z);
+y = y - 1;
+print(y)
