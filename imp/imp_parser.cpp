@@ -2,11 +2,11 @@
 
 #include "imp_parser.hh"
 
-const char* Token::token_names[34] = { 
+const char* Token::token_names[35] = { 
   "LPAREN", "RPAREN", "PLUS", "MINUS","MULT","DIV","EXP", "LT", "LTEQ", "GT", "GTEQ", "EQ",
-  "TPOINTS", "NUM", "ID", "PRINT", "IFEXP", "COMMA", "SEMICOLON", "ASSIGN",
+  "TPOINTS", "NUM", "ID", "PRINT", "CONDEXP", "COMMA", "SEMICOLON", "ASSIGN",
   "IF", "THEN", "ELSE","ENDIF", "WHILE", "DO", "ENDWHILE"
-  "FOR", "TO", "ENDFOR", "BREAK", "CONTINUE", "ERR", "END"
+  "FOR", "TO", "ENDFOR", "BREAK", "CONTINUE", "ERR", "END", "VAR"
 };
 
 Token::Token(Type type):type(type) { lexema = ""; }
@@ -34,15 +34,16 @@ Scanner::Scanner(string s):input(s),first(0),current(0) {
   reserved["then"] = Token::THEN;
   reserved["else"] = Token::ELSE;
   reserved["endif"] = Token::ENDIF;
-  reserved["ifexp"] = Token::IFEXP;
+  reserved["ifexp"] = Token::CONDEXP;
   reserved["while"] = Token::WHILE;
   reserved["do"] = Token::DO;
   reserved["endwhile"] = Token::ENDWHILE;
-  reserved["for"] = Token::FOR;
-  reserved["to"] = Token::TO;
-  reserved["endfor"] = Token::ENDFOR;
-  reserved["break"] = Token::BREAK;
-  reserved["continue"] = Token::CONTINUE;
+  reserved["var"] = Token::VAR;
+  // reserved["for"] = Token::FOR;
+  // reserved["to"] = Token::TO;
+  // reserved["endfor"] = Token::ENDFOR;
+  // reserved["continue"] = Token::CONTINUE;
+  // reserved["break"] = Token::BREAK;
 }
 
 Token* Scanner::nextToken() {
@@ -178,6 +179,11 @@ bool Parser::isAtEnd() {
   return (current->type == Token::END);
 } 
 
+void Parser::parserError(string s) {
+  cout << "Parsing error: " << s << endl;
+  exit(0);
+}
+
 Parser::Parser(Scanner* sc):scanner(sc) {
   previous = current = NULL;
   return;
@@ -201,7 +207,45 @@ Program* Parser::parse() {
 }
 
 Program* Parser::parseProgram() {
-  return new Program(parseStatementList());
+  return new Program(parseBody());
+}
+
+Body* Parser::parseBody() {
+  VarDecList* vdl = parseVarDecList();
+  StatementList* sl = parseStatementList();
+  return new Body(vdl, sl);
+}
+
+VarDec* Parser::parseVarDec() {
+  VarDec* vd = NULL;
+  if (match(Token::VAR)) {
+    if (!match(Token::ID)) parserError("Expecting type in var declaration");
+    string var, type = previous->lexema;
+    list<string> vars;
+    if (!match(Token::ID)) parserError("Expecting id in var declaration");
+    var = previous->lexema;
+    vars.push_back(var);
+    while(match(Token::COMMA)) {
+      if (!match(Token::ID)) parserError("Expecting id in comma in var declaration");
+      var = previous->lexema;
+      vars.push_back(var);
+    }
+    if (!match(Token::SEMICOLON)) parserError("Expecting semicolon at end of var declaration");
+    vd = new VarDec(type,vars);
+  }
+  return vd;
+}
+
+
+VarDecList* Parser::parseVarDecList() {
+  VarDecList* vdl = new VarDecList();
+  VarDec* vd;
+  vd = parseVarDec();
+  while(vd != NULL) {
+    vdl->add(vd);
+    vd = parseVarDec();
+  }
+  return vdl;
 }
 
 StatementList* Parser::parseStatementList() {
@@ -213,106 +257,56 @@ StatementList* Parser::parseStatementList() {
   return p;
 }
 
-
+/*
+  id = exp
+  print(x)
+ */
 Stm* Parser::parseStatement() {
   Stm* s = NULL;
   Exp* e;
+  Body *tb, *fb;
   if (match(Token::ID)) {
     string lex = previous->lexema;
-    if (!match(Token::ASSIGN)) {
-      cout << "Error: esperaba =" << endl;  
-      exit(0);
-    }
-    s = new AssignStatement(lex, parseCondExp());
+    if (!match(Token::ASSIGN)) parserError("Esperaba =");
+    s = new AssignStatement(lex, parseCExp());
     //memoria_update(lex, v);
-  }
-
-  else if (match(Token::IF)) {
-    e = parseCondExp();
-    if (!match(Token::THEN)) {
-      cout << "Error: esperaba then " << endl;
-      exit(0);
-    }
-    StatementList* lhs = parseStatementList();
-    StatementList* rhs = NULL;
-    if (match(Token::ELSE))
-      rhs = parseStatementList();
-    if (!match(Token::ENDIF)) {
-      cout << "Error: esperaba endif " << endl;
-      exit(0);
-    }
-    s = new IfStatement(e, lhs, rhs);
-  }
-
-  else if (match(Token::WHILE)) {
-    e = parseCondExp();
-    if (!match(Token::DO)) {
-      cout << "Error: esperaba do " << endl;
-      exit(0);
-    }
-    StatementList* lhs = parseStatementList();
-    if (!match(Token::ENDWHILE)) {
-      cout << "Error: esperaba endwhile " << endl;
-      exit(0);
-    }
-    s = new WhileStatement(e, lhs);
-  }
-
-  else if (match(Token::DO)) {
-    StatementList* lhs = parseStatementList();
-    if (!match(Token::WHILE)) {
-      cout << "Error: esperaba while " << endl;
-      exit(0);
-    }
-    e = parseCondExp();
-    s = new DoWhileStatement(lhs, e);
-  }
-
-  else if (match(Token::FOR)) {
-    if (!match(Token::ID)) {
-      cout << "Error: esperaba un identificador " << endl;
-      exit(0);
-    }
-    string id = previous->lexema;
-    if (!match(Token::TPOINTS)) {
-      cout << "Error: esperaba un : " << endl;
-      exit(0);
-    }
-    e = parseCondExp();
-    if (!match(Token::TO)) {
-      cout << "Error: esperaba un TO " << endl;
-      exit(0);
-    }
-    Exp* e2 = parseCondExp();
-    if (!match(Token::DO)) {
-      cout << "Error: esperaba un do " << endl;
-      exit(0);
-    }
-    StatementList* body = parseStatementList();
-    if (!match(Token::ENDFOR)) {
-      cout << "Error: esperaba un endfor " << endl;
-      exit(0);
-    }
-    s = new ForStatement(id, e, e2, body);
   }
   
   else if (match(Token::PRINT)) {
-    if (!match(Token::LPAREN)) {
-      cout << "Error: esperaba ( " << endl;
-      exit(0);
-    }
-    e = parseCondExp();
-    if (!match(Token::RPAREN)) {
-      cout << "Error: esperaba )" << endl;
-      exit(0);
-    }
+    if (!match(Token::LPAREN)) parserError("Esperaba (");
+    e = parseCExp();
+    if (!match(Token::RPAREN)) parserError("Esperaba )");
     s = new PrintStatement(e);
+  }
+  
+  else if (match(Token::IF)) {
+    e = parseCExp();
+    if (!match(Token::THEN)) parserError("Esperaba 'then'");
+
+    tb = parseBody();
+    fb = NULL;
+    if (match(Token::ELSE)) {
+      fb = parseBody();
+    }
+    if (!match(Token::ENDIF)) parserError("Esperaba 'endif'");
+
+    s = new IfStatement(e,tb,fb);
+  } 
+  
+  else if (match(Token::WHILE)) {
+    e = parseCExp();
+    if (!match(Token::DO)) parserError("Esperaba 'do'");
+    tb = parseBody();
+    if (!match(Token::ENDWHILE)) parserError("Esperaba 'endwhile'");
+    s = new WhileStatement(e,tb);
   } 
 
-  else if (match(Token::BREAK))
-    s = new BreakStatement();
-  else if (match(Token::CONTINUE))
-    s = new ContinueStatement();
+  else if (match(Token::DO)) {
+    tb = parseBody();
+    if (!match(Token::WHILE)) parserError("Esperaba 'while'");
+    e = parseCExp();
+    s = new DoWhileStatement(e,tb);
+  }
   
   else {
     cout << "No se encontro Statement" << endl;
@@ -321,20 +315,19 @@ Stm* Parser::parseStatement() {
   return s;
 }
 
-Exp* Parser::parseCondExp() {
+Exp* Parser::parseCExp() {
   Exp *e, *rhs;
   e = parseExpression();
-  while(match(Token::LT) || match(Token::LTEQ) || match(Token::GT) || match(Token::GTEQ) || match(Token::EQ)) {
+  if(match(Token::LT) || match(Token::LTEQ) || match(Token::EQ)) {
     Token::Type op = previous->type;
     BinaryOp binop;
-    switch (op){
+    switch (op) {
       case Token::LT: binop = LT; break;
       case Token::LTEQ: binop = LTEQ; break;
       case Token::GT: binop = GT; break;
       case Token::GTEQ: binop = GTEQ; break;
       case Token::EQ: binop = EQ; break;
-      default:
-        break;
+      default: cout << "Don't stay here !" << endl; exit(0);
     }
     rhs = parseExpression();
     e = new BinaryExp(e, rhs, binop);
@@ -383,51 +376,23 @@ Exp* Parser::parseFactor() {
   if (match(Token::ID)) {
     return new IdExp(previous->lexema);
   }
-  if (match(Token::IFEXP)) {
-    if (!match(Token::LPAREN)) {
-      cout << "Expecting left parenthesis" << endl;
-      exit(0);
-    }
-    Exp* cond = parseCondExp();
-    if (!match(Token::COMMA)) {
-      cout << "Expecting comma " << endl;
-      exit(0);
-    }
-    Exp* texp = parseCondExp();
-    if (!match(Token::COMMA)) {
-      cout << "Expecting comma " << endl;
-      exit(0);
-    }
-    Exp* fexp = parseCondExp();
-    if (!match(Token::RPAREN)) {
-      cout << "Expecting right parenthesis " << endl;
-      exit(0);
-    }
-    return new CondExp(cond, texp, fexp);
-  }
-
   if (match(Token::LPAREN)) {
-    Exp* e = parseCondExp();
-    if (!match(Token::RPAREN)) {
-      cout << "Expecting right parenthesis" << endl;
-      exit(0);
-    }
-    // return e; is fine too
+    Exp* e = parseCExp();
+    if (!match(Token::RPAREN)) parserError("Expecting right parenthesis");
     return new ParenthExp(e);
+  }
+  if (match(Token::CONDEXP)) {
+    if (!match(Token::LPAREN)) parserError("Expecting left parenthesis");
+    Exp* c = parseCExp();
+    if (!match(Token::COMMA)) parserError("Expecting comma");
+    Exp* et = parseCExp();
+    if (!match(Token::COMMA)) parserError("Expecting comma");
+    Exp* ef = parseCExp();
+    if (!match(Token::RPAREN)) parserError("Expecting right parenthesis");
+    return new CondExp(c,et,ef);
   }
   cout << "Couldn't find match for token: " << current << endl;
   exit(0);
 }
 
-
-
-
-
-
-
-
-
 // ---------------------------------------------------
-
-
-

@@ -1,2 +1,0 @@
-x = (5+4)*2;
-for i: 4 to x do print(i) endfor

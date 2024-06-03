@@ -18,11 +18,11 @@ class Token {
 public:
   enum Type {
     LPAREN=0, RPAREN, PLUS, MINUS, MULT, DIV, EXP, LT, LTEQ, GT, GTEQ, EQ, 
-    TPOINTS, NUM, ID, PRINT, IFEXP, COMMA, SEMICOLON, ASSIGN, 
+    TPOINTS, NUM, ID, PRINT, CONDEXP, COMMA, SEMICOLON, ASSIGN, 
     IF, THEN, ELSE, ENDIF, WHILE, DO, ENDWHILE, 
-    FOR, TO, ENDFOR, BREAK, CONTINUE, ERR, END 
+    FOR, TO, ENDFOR, BREAK, CONTINUE, ERR, END, VAR
   };
-  static const char* token_names[34]; 
+  static const char* token_names[35]; 
   Type type;
   string lexema;
   Token(Type);
@@ -54,11 +54,15 @@ private:
   bool check(Token::Type ttype);
   bool advance();
   bool isAtEnd();
+  void parserError(string s);
   Program* parseProgram();
+  Body* parseBody();
+  VarDecList* parseVarDecList();
+  VarDec* parseVarDec();  
   StatementList* parseStatementList();
   Stm* parseStatement();
+  Exp* parseCExp();
   Exp* parseExpression();
-  Exp* parseCondExp();
   Exp* parseTerm();
   Exp* parseFExp();
   Exp* parseFactor();

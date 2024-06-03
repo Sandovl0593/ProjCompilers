@@ -1,23 +1,26 @@
-#ifndef IMP_INTERPRETER
-#define IMP_INTERPRETER
+#ifndef IMP_TYPECHECKER
+#define IMP_TYPECHECKER
 
 #include <unordered_map>
 
 #include "imp.hh"
-#include "imp_value_visitor.hh"
+#include "type_visitor.hh"
 #include "../environment.hh"
 
 using namespace std;
 
-class ImpInterpreter : public ImpValueVisitor {
-private:
-  Environment<ImpValue> env;
+class ImpTypeChecker : public TypeVisitor {
 public:
-  void interpret(Program*);
+  ImpTypeChecker();
+private:
+  Environment<ImpType> env;
+
+public:
+  void typecheck(Program*);
   void visit(Program*);
   void visit(Body*);
   void visit(VarDecList*);
-  void visit(VarDec*);  
+  void visit(VarDec*);
   void visit(StatementList*);
   void visit(AssignStatement*);
   void visit(PrintStatement*);
@@ -26,11 +29,11 @@ public:
   void visit(DoWhileStatement*);
   // void visit(ForStatement*);
   
-  ImpValue visit(BinaryExp* e);
-  ImpValue visit(NumberExp* e);
-  ImpValue visit(IdExp* e);
-  ImpValue visit(ParenthExp* e);
-  ImpValue visit(CondExp* e);
+  ImpType visit(BinaryExp* e);
+  ImpType visit(NumberExp* e);
+  ImpType visit(IdExp* e);
+  ImpType visit(ParenthExp* e);
+  ImpType visit(CondExp* e);
 };
 
 

@@ -1,9 +1,10 @@
-#ifndef IMP_AST_VISITOR
-#define IMP_AST_VISITOR
+#ifndef IMP_VALUE_VISITOR
+#define IMP_VALUE_VISITOR
 
 #include "imp.hh"
+#include "imp_value.hh"
 
-class ImpVisitor {
+class ImpValueVisitor {
 public:
   virtual void visit(Program* p) = 0;
   virtual void visit(Body* b) = 0;
@@ -17,11 +18,11 @@ public:
   virtual void visit(DoWhileStatement* e) = 0;
   // virtual void visit(ForStatement* e) = 0;
   
-  virtual int visit(BinaryExp* e) = 0;
-  virtual int visit(NumberExp* e) = 0;
-  virtual int visit(IdExp* e) = 0;
-  virtual int visit(ParenthExp* e) = 0;
-  virtual int visit(CondExp* e) = 0;
+  virtual ImpValue visit(BinaryExp* e) = 0;
+  virtual ImpValue visit(NumberExp* e) = 0;
+  virtual ImpValue visit(IdExp* e) = 0;
+  virtual ImpValue visit(ParenthExp* e) = 0;
+  virtual ImpValue visit(CondExp* e) = 0;
 };
 
 
