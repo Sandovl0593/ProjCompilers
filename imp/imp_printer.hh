@@ -7,17 +7,17 @@
 class ImpPrinter : public ImpVisitor {
 public:
   void print(Program*);
-  void visit(Program*);
-  void visit(Body*);
-  void visit(VarDecList*);
-  void visit(VarDec*); 
-  void visit(StatementList*);
-  void visit(AssignStatement*);
-  void visit(PrintStatement*);
-  void visit(IfStatement*);
-  void visit(WhileStatement*);
-  void visit(DoWhileStatement*);
-  // void visit(ForStatement*);
+  int visit(Program*);
+  int visit(Body*);
+  int visit(VarDecList*);
+  int visit(VarDec*); 
+  int visit(StatementList*);
+  int visit(AssignStatement*);
+  int visit(PrintStatement*);
+  int visit(IfStatement*);
+  int visit(WhileStatement*);
+  int visit(DoWhileStatement*);
+  // int visit(ForStatement*);
 
   
   int visit(BinaryExp* e);
@@ -25,6 +25,8 @@ public:
   int visit(IdExp* e);
   int visit(ParenthExp* e);
   int visit(CondExp* e);
+  int visit(UnaryExp* e);
+  int visit(BoolExp* e);
 };
 
 

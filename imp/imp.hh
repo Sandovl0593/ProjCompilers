@@ -8,21 +8,19 @@
 
 #include <list>
 
-#include "imp_value.hh"
+#include "imp_type.hh"
 
 using namespace std;
 
 class ImpVisitor;
-class ImpValueVisitor;
 class TypeVisitor;
 
-enum BinaryOp { PLUS, MINUS, MULT, DIV, EXP, LT, LTEQ, GT, GTEQ, EQ};
-
+enum BinaryOp { PLUS, MINUS, MULT, DIV, EXP, LT, LTEQ, GT, GTEQ, EQ, AND, OR };
+enum UnaryOp { NEG, NOT };
   
 class Exp {
 public:
   virtual int accept(ImpVisitor* v) = 0;
-  virtual ImpValue accept(ImpValueVisitor* v) = 0;
   virtual ImpType accept(TypeVisitor* v) = 0;
   static string binopToString(BinaryOp op);
   virtual ~Exp() = 0;
@@ -34,7 +32,6 @@ public:
   BinaryOp op;
   BinaryExp(Exp* l, Exp* r, BinaryOp op);
   int accept(ImpVisitor* v);
-  ImpValue accept(ImpValueVisitor* v);
   ImpType accept(TypeVisitor* v);
   ~BinaryExp();
 };
@@ -44,7 +41,6 @@ public:
   int value;
   NumberExp(int v);
   int accept(ImpVisitor* v);
-  ImpValue accept(ImpValueVisitor* v);
   ImpType accept(TypeVisitor* v);
   ~NumberExp();
 };
@@ -54,7 +50,6 @@ public:
   string id;
   IdExp(string id);
   int accept(ImpVisitor* v);
-  ImpValue accept(ImpValueVisitor* v);
   ImpType accept(TypeVisitor* v);
   ~IdExp();
 };
@@ -64,7 +59,6 @@ public:
   Exp *e;
   ParenthExp(Exp *e);
   int accept(ImpVisitor* v);
-  ImpValue accept(ImpValueVisitor* v);
   ImpType accept(TypeVisitor* v);
   ~ParenthExp();
 };
@@ -74,17 +68,35 @@ public:
   Exp *cond, *etrue, *efalse;
   CondExp(Exp* c, Exp* et, Exp* ef);
   int accept(ImpVisitor* v);
-  ImpValue accept(ImpValueVisitor* v);
   ImpType accept(TypeVisitor* v);
   ~CondExp();
 };
+
+class BoolExp : public Exp {
+public:
+  bool value;
+  BoolExp(bool v);
+  int accept(ImpVisitor* v);
+  ImpType accept(TypeVisitor* v);
+  ~BoolExp();
+};
+
+class UnaryExp : public Exp {
+public:
+  Exp* e;
+  UnaryOp op;
+  UnaryExp(Exp* e, UnaryOp op);
+  int accept(ImpVisitor* v);
+  ImpType accept(TypeVisitor* v);
+  ~UnaryExp();
+};
+
 
 
 
 class Stm {
 public:
   virtual void accept(ImpVisitor* v) = 0;
-  virtual void accept(ImpValueVisitor* v)=0;
   virtual void accept(TypeVisitor* v)=0;
   virtual ~Stm() = 0;
 };
@@ -98,7 +110,6 @@ public:
   Exp* rhs;  
   AssignStatement(string id, Exp* e);
   void accept(ImpVisitor* v);
-  void accept(ImpValueVisitor* v);
   void accept(TypeVisitor* v);
   ~AssignStatement();
 };
@@ -108,7 +119,6 @@ public:
   Exp* e;  
   PrintStatement(Exp* e);
   void accept(ImpVisitor* v);
-  void accept(ImpValueVisitor* v);
   void accept(TypeVisitor* v);
   ~PrintStatement();
 };
@@ -119,7 +129,6 @@ public:
   Body *tbody, *fbody;
   IfStatement(Exp* c, Body* tbody, Body *fbody);
   void accept(ImpVisitor* v);
-  void accept(ImpValueVisitor* v);
   void accept(TypeVisitor* v);
   ~IfStatement();
 };
@@ -130,7 +139,6 @@ public:
   Body *body;
   WhileStatement(Exp* c, Body* b);
   void accept(ImpVisitor* v);
-  void accept(ImpValueVisitor* v);
   void accept(TypeVisitor* v);
   ~WhileStatement();
 };
@@ -141,7 +149,6 @@ public:
   Body *body;
   DoWhileStatement(Exp* c, Body* b);
   void accept(ImpVisitor* v);
-  void accept(ImpValueVisitor* v);
   void accept(TypeVisitor* v);
   ~DoWhileStatement();
 };
@@ -154,7 +161,6 @@ public:
 //   Body *body;
 //   ForStatement(string id, Exp* begin, Exp* end, Body* body);
 //   void accept(ImpVisitor* v);
-//   void accept(ImpValueVisitor* v);
 //   void accept(ImpVisitor* v);
 //   ~ForStatement();
 // };
@@ -176,7 +182,6 @@ public:
   StatementList();
   void add(Stm* s);
   void accept(ImpVisitor* v);
-  void accept(ImpValueVisitor* v);
   void accept(TypeVisitor* v);
   ~StatementList();
 };
@@ -187,7 +192,6 @@ public:
   list<string> vars;
   VarDec(string type, list<string> vars);
   void accept(ImpVisitor* v);
-  void accept(ImpValueVisitor* v);
   void accept(TypeVisitor* v);
   ~VarDec();
 };
@@ -199,7 +203,6 @@ public:
   VarDecList();
   void add(VarDec* s);
   void accept(ImpVisitor* v);
-  void accept(ImpValueVisitor* v);
   void accept(TypeVisitor* v);
   ~VarDecList();
 };
@@ -211,7 +214,6 @@ public:
   StatementList* slist;
   Body(VarDecList* vdl, StatementList* sl);
   void accept(ImpVisitor* v);
-  void accept(ImpValueVisitor* v);
   void accept(TypeVisitor* v);
   ~Body();
 };
@@ -221,7 +223,6 @@ public:
   Body* body;
   Program(Body* body);
   void accept(ImpVisitor* v);
-  void accept(ImpValueVisitor* v);
   void accept(TypeVisitor* v);
   ~Program();
 };

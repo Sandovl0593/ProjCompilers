@@ -4,33 +4,35 @@
 #include <unordered_map>
 
 #include "imp.hh"
-#include "imp_value_visitor.hh"
+#include "imp_visitor.hh"
 #include "../environment.hh"
 
 using namespace std;
 
-class ImpInterpreter : public ImpValueVisitor {
+class ImpInterpreter : public ImpVisitor {
 private:
-  Environment<ImpValue> env;
+  Environment<int> env;
 public:
-  void interpret(Program*);
-  void visit(Program*);
-  void visit(Body*);
-  void visit(VarDecList*);
-  void visit(VarDec*);  
-  void visit(StatementList*);
-  void visit(AssignStatement*);
-  void visit(PrintStatement*);
-  void visit(IfStatement*);
-  void visit(WhileStatement*);
-  void visit(DoWhileStatement*);
-  // void visit(ForStatement*);
+  int interpret(Program*);
+  int visit(Program*);
+  int visit(Body*);
+  int visit(VarDecList*);
+  int visit(VarDec*);  
+  int visit(StatementList*);
+  int visit(AssignStatement*);
+  int visit(PrintStatement*);
+  int visit(IfStatement*);
+  int visit(WhileStatement*);
+  int visit(DoWhileStatement*);
+  // int visit(ForStatement*);
   
-  ImpValue visit(BinaryExp* e);
-  ImpValue visit(NumberExp* e);
-  ImpValue visit(IdExp* e);
-  ImpValue visit(ParenthExp* e);
-  ImpValue visit(CondExp* e);
+  int visit(BinaryExp* e);
+  int visit(NumberExp* e);
+  int visit(IdExp* e);
+  int visit(ParenthExp* e);
+  int visit(CondExp* e);
+  int visit(UnaryExp* e);
+  int visit(BoolExp* e);
 };
 
 

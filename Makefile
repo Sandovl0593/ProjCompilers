@@ -1,8 +1,8 @@
 CC=g++
 
-SRC_IMP=imp_test.cpp imp\imp.cpp imp\imp_parser.cpp imp\imp_value.cpp imp\imp_printer.cpp imp\imp_interpreter.cpp
+SRC_IMP=imp_test.cpp imp\imp.cpp imp\imp_parser.cpp imp\imp_type.cpp imp\imp_printer.cpp imp\imp_interpreter.cpp
 
-SRC_COMP=imp_compiler.cpp imp\imp.cpp imp\imp_parser.cpp imp\imp_printer.cpp imp\imp_typechecker.cpp imp\imp_value.cpp imp\imp_interpreter.cpp imp\imp_codegen.cpp
+SRC_COMP=imp_compiler.cpp imp\imp.cpp imp\imp_parser.cpp imp\imp_printer.cpp imp\imp_typechecker.cpp imp\imp_type.cpp imp\imp_interpreter.cpp imp\imp_codegen.cpp
 
 SRC_SVM=svm\svm_run.cpp svm\svm_parser.cpp svm\svm.cpp
 

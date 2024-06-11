@@ -116,9 +116,9 @@ Token* Scanner::nextToken() {
       lex = getLexema();
       ttype = checkReserved(lex);
       if (ttype != Token::ERR)
-	return new Token(ttype);
+        return new Token(ttype);
       else
-	return new Token(Token::ID, getLexema()); 
+        return new Token(Token::ID, getLexema()); 
     case 3:
       rollBack();
       token = new Token(Token::LABEL,getLexema());
@@ -127,9 +127,9 @@ Token* Scanner::nextToken() {
     case 5:
       rollBack();
       lex = getLexema();
-      if (lex.size()==1 && lex[0]=='-') {
-	return new Token(Token::ERR, lex);
-      }
+      if (lex.size()==1 && lex[0]=='-')
+        return new Token(Token::ERR, lex);
+      
       return new Token(Token::NUM,lex);
     case 7:
       rollBack();
@@ -268,8 +268,8 @@ Parser::Parser(Scanner* sc):scanner(sc) {
 SVM* Parser::parse() {
   current = scanner->nextToken();
   if (check(Token::ERR)) {
-      cout << "Error en scanner - caracter invalido" << endl;
-      exit(0);
+    cout << "Error en scanner - caracter invalido" << endl;
+    exit(0);
   }
   Instruction* instr = NULL;
   list<Instruction*> sl;
@@ -304,14 +304,15 @@ Instruction* Parser::parseInstruction() {
       match(Token::GT) || match(Token::GE) || match(Token::LT) ||
       match(Token::LE) || match(Token::AND) || match(Token::OR) ||
       match(Token::PRINT) ||match(Token::NEG) || match(Token::NOT)||
-      match(Token::HALT) ||match(Token::CALL) || match(Token::MARK)
-      )  { 
+      match(Token::HALT) ||match(Token::CALL) || match(Token::MARK))
+  { 
     tipo = 0;
     ttype = previous->type;
-  } else if (match(Token::PUSH) || match(Token::STORE) || match(Token::LOAD) ||
-	     match(Token::ENTER) || match(Token::ALLOC) || 
-	     match(Token::STORER) || match(Token::LOADR) || match(Token::RETURN)
-	     ) {
+  }
+  else if (match(Token::PUSH) || match(Token::STORE) || match(Token::LOAD) ||
+           match(Token::ENTER) || match(Token::ALLOC) || 
+           match(Token::STORER) || match(Token::LOADR) || match(Token::RETURN))
+  {
     tipo = 1;
     ttype = previous->type;
     if (!match(Token::NUM)) {
@@ -319,8 +320,11 @@ Instruction* Parser::parseInstruction() {
       exit(0);
     }
     n = stoi(previous->lexema);
-  } else if (match(Token::JMPZ) || match(Token::JMPN) ||
-	     match(Token::GOTO) || match(Token::PUSHA )) {
+  } 
+  
+  else if (match(Token::JMPZ) || match(Token::JMPN) ||
+           match(Token::GOTO) || match(Token::PUSHA ))
+  {
     tipo = 2;
     ttype = previous->type;
     if (!match(Token::ID)) {
@@ -328,7 +332,8 @@ Instruction* Parser::parseInstruction() {
       exit(0);
     }   
     jmplabel = previous->lexema;
-  } else {
+  } 
+  else {
     cout << "Error: no pudo encontrar match para " << current << endl;  
     exit(0);
   }
@@ -346,10 +351,9 @@ Instruction* Parser::parseInstruction() {
   } else { 
     instr = new Instruction(label, Token::tokenToIType(ttype), jmplabel);
   }
-			   
+
 
   return instr;
 }
 
-				    
 

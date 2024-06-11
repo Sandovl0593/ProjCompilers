@@ -2,7 +2,7 @@
 #define TYPE_VISITOR
 
 #include "imp.hh"
-#include "imp_value.hh"
+#include "imp_type.hh"
 
 class TypeVisitor {
 public:
@@ -23,6 +23,8 @@ public:
   virtual ImpType visit(IdExp* e) = 0;
   virtual ImpType visit(ParenthExp* e) = 0;
   virtual ImpType visit(CondExp* e) = 0;
+  virtual ImpType visit(UnaryExp* e) = 0;
+  virtual ImpType visit(BoolExp* e) = 0;
 };
 
 

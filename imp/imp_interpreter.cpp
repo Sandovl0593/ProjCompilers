@@ -1,174 +1,141 @@
 #include "imp_interpreter.hh"
 
-
-/* *************** Fin manejo del estado del programa ****** */
-
-void ImpInterpreter::interpret(Program* p) {
+int ImpInterpreter::interpret(Program* p) {
   env.clear();
   p->accept(this);
-  return;
+  return 0;
 }
 
-void ImpInterpreter::visit(Program* p) {
+int ImpInterpreter::visit(Program* p) {
   p->body->accept(this);
-  return;
+  return 0;
 }
 
-void ImpInterpreter::visit(Body* b) {
+int ImpInterpreter::visit(Body* b) {
   env.add_level(); 
   b->var_decs->accept(this);
   b->slist->accept(this);
   env.remove_level();  
-  return;
+  return 0;
 }
 
 
-void ImpInterpreter::visit(VarDecList* decs) {
+int ImpInterpreter::visit(VarDecList* decs) {
   list<VarDec*>::iterator it;
   for (it = decs->vdlist.begin(); it != decs->vdlist.end(); ++it) {
     (*it)->accept(this);
   }  
-  return;
+  return 0;
 }
 
-void ImpInterpreter::visit(VarDec* vd) {
+int ImpInterpreter::visit(VarDec* vd) {
   list<string>::iterator it;
-  ImpValue v;
-  ImpType tt = ImpValue::get_basic_type(vd->type);
-  v.set_default_value(tt);
   for (it = vd->vars.begin(); it != vd->vars.end(); ++it) {
-    env.add_var(*it,v);
+    env.add_var(*it, 0);
   }   
-  return;
+  return 0;
 }
 
-void ImpInterpreter::visit(StatementList* s) {
+int ImpInterpreter::visit(StatementList* s) {
   list<Stm*>::iterator it;
   for (it = s->slist.begin(); it != s->slist.end(); ++it) {
     (*it)->accept(this);
   }
-  return;
+  return 0;
 }
 
-void ImpInterpreter::visit(AssignStatement* s) {
-  ImpValue v = s->rhs->accept(this);
+int ImpInterpreter::visit(AssignStatement* s) {
+  int v = s->rhs->accept(this);
   if (!env.check(s->id)) {
     cout << "Variable " << s->id << " undefined" << endl;
     exit(0);
   }
-  ImpValue lhs = env.lookup(s->id);
-  if (lhs.type != v.type) {
-    cout << "Type Error en Assign: Tipos de variable " << s->id;
-    cout << " y valor no coinciden" << endl;
-    exit(0);
-  }
-  env.update(s->id, v);
-  return;
+  env.update(s->id, v);  
+  //memoria_update(s->id, v);
+  
+  return 0;
 }
 
-void ImpInterpreter::visit(PrintStatement* s) {
-  ImpValue v = s->e->accept(this);
+int ImpInterpreter::visit(PrintStatement* s) {
+  int v = s->e->accept(this);
   cout << v << endl;
-  return;
+  return 0;
 }
 
-void ImpInterpreter::visit(IfStatement* s) {
-  ImpValue v = s->cond->accept(this);
-  if (v.type != TBOOL) {
-    cout << "Type error en If: esperaba bool en condicional" << endl;
-    exit(0);
-  }	      
-  if (v.bool_value) {
+int ImpInterpreter::visit(IfStatement* s) {
+  if (s->cond->accept(this)) {
     s->tbody->accept(this);
   } else {
     if (s->fbody != NULL)
       s->fbody->accept(this);
   }
-  return;
+  return 0;
 }
 
-void ImpInterpreter::visit(WhileStatement* s) {
-  ImpValue v = s->cond->accept(this);
-  if (v.type != TBOOL) {
-    cout << "Type error en While: esperaba bool en condicional" << endl;
-    exit(0);
-  }	        
- while (v.bool_value) {
+int ImpInterpreter::visit(WhileStatement* s) {
+ while (s->cond->accept(this)) {
     s->body->accept(this);
-    v = s->cond->accept(this);
   }
- return;
+ return 0;
 }
 
-void ImpInterpreter::visit(DoWhileStatement* s) {
-  ImpValue v = s->cond->accept(this);
-  if (v.type != TBOOL) {
-    cout << "Type error en DoWhile: esperaba bool en condicional" << endl;
-    exit(0);
-  }
+int ImpInterpreter::visit(DoWhileStatement* s) {
   do {
     s->body->accept(this);
-    v = s->cond->accept(this);
-  } while (v.bool_value);
-  return;
+  } while (s->cond->accept(this));
+  return 0;
 }
 
-ImpValue ImpInterpreter::visit(BinaryExp* e) {
-  ImpValue result;
-  ImpValue v1 = e->left->accept(this);
-  ImpValue v2 = e->right->accept(this);
-  int iv, iv1, iv2;
-  bool bv;
-  ImpType type = NOTYPE;
-  iv1 = v1.int_value;
-  iv2 = v2.int_value;
+int ImpInterpreter::visit(BinaryExp* e) {
+  int v1 = e->left->accept(this);
+  int v2 = e->right->accept(this);
+  int result = 0;
   switch(e->op) {
-  case PLUS: iv = iv1+iv2; type = TINT; break;
-  case MINUS: iv = iv1-iv2; type = TINT; break;
-  case MULT: iv = iv1 * iv2; type = TINT; break;
-  case DIV: iv = iv1 / iv2; type = TINT; break;
+  case PLUS: result = v1+v2; break;
+  case MINUS: result = v1-v2; break;
+  case MULT: result = v1 * v2; break;
+  case DIV: result = v1 / v2; break;
   case EXP:
-    iv = 1;
-    while (iv2 > 0) { iv *= iv1; iv2--; }
-    type = TINT;
+    result = 1;
+    while (v2 > 0) { result *= v1; v2--; }
     break;
-  case LT: bv = (iv1 < iv2) ? 1 : 0; type = TBOOL; break;
-  case LTEQ: bv = (iv1 <= iv2) ? 1: 0; type = TBOOL; break;
-  case EQ: bv = (iv1 == iv2) ? 1 : 0; type = TBOOL; break;
+  case LT: result = (v1 < v2) ? 1 : 0; break;
+  case LTEQ: result = (v1 <= v2) ? 1: 0; break;
+  case EQ: result = (v1 == v2) ? 1 : 0; break;
   }
-  if (type == TINT) result.int_value = iv;
-  else result.bool_value = bv;
-  result.type = type;
   return result;
 }
 
-ImpValue ImpInterpreter::visit(NumberExp* e) {
-  ImpValue v;
-  v.set_default_value(TINT);
-  v.int_value = e->value;
-  return v;
+int ImpInterpreter::visit(UnaryExp* e) {
+  int v = e->e->accept(this);
+  if (e->op == NEG) return -v;
+  else return (v?0:1);
 }
 
-ImpValue ImpInterpreter::visit(IdExp* e) {
+int ImpInterpreter::visit(NumberExp* e) {
+  return e->value;
+}
+
+int ImpInterpreter::visit(BoolExp* e) {
+  return e->value ? 1 : 0;
+}
+
+int ImpInterpreter::visit(IdExp* e) {
   if (env.check(e->id))
     return env.lookup(e->id);
   else {
     cout << "Variable indefinida: " << e->id << endl;
     exit(0);
   }
+  return 0;
 }
 
-ImpValue ImpInterpreter::visit(ParenthExp* ep) {
+int ImpInterpreter::visit(ParenthExp* ep) {
   return ep->e->accept(this);
 }
 
-ImpValue ImpInterpreter::visit(CondExp* e) {
-  ImpValue v = e->cond->accept(this);
-  if (v.type != TBOOL) {
-    cout << "Type error en ifexp: esperaba bool en condicional" << endl;
-    exit(0);
-  }
-  if (v.bool_value == 0)
+int ImpInterpreter::visit(CondExp* e) {
+  if (e->cond->accept(this) == 0)
     return e->efalse->accept(this);
   else
     return e->etrue->accept(this);

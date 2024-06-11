@@ -29,104 +29,113 @@ void ImpCodeGen::codegen(Program* p, string outfname) {
   nolabel = "";
   current_label = 0;
   siguiente_direccion = 0;
+  mem_locals = 0;
   p->accept(this);
   ofstream outfile;
   outfile.open(outfname);
   outfile << code.str();
   outfile.close();
-
+  cout << "Memoria variables locales: " << mem_locals << endl;
   return;
 }
 
-void ImpCodeGen::visit(Program* p) {
-  int mem_size = 10;
-  codegen(nolabel,"alloc",mem_size);
+int ImpCodeGen::visit(Program* p) {
   p->body->accept(this);
-  codegen(nolabel, "halt");
-  return;
+  return 0;
 }
 
-void ImpCodeGen::visit(Body * b) {
-  direcciones.add_level();  
+int ImpCodeGen::visit(Body * b) {
+  int dir = siguiente_direccion;
+  direcciones.add_level();
   b->var_decs->accept(this);
   b->slist->accept(this);
   direcciones.remove_level();
-  return;
+  if (siguiente_direccion > mem_locals) mem_locals = siguiente_direccion;
+  siguiente_direccion = dir;
+  return 0;
 }
 
-void ImpCodeGen::visit(VarDecList* s) {
+int ImpCodeGen::visit(VarDecList* s) {
   list<VarDec*>::iterator it;
   for (it = s->vdlist.begin(); it != s->vdlist.end(); ++it) {
     (*it)->accept(this);
   }  
-  return;
-}
-			  
-void ImpCodeGen::visit(VarDec* vd) {
-  list<string>::iterator it;
-  for (it = vd->vars.begin(); it != vd->vars.end(); ++it){
-    // cual es la siguiente direccion?
-    direcciones.add_var(*it, 0);
-  }
-  return;
+  return 0;
 }
 
-void ImpCodeGen::visit(StatementList* s) {
+int ImpCodeGen::visit(VarDec* vd) {
+  list<string>::iterator it;
+  int prev_direcciones = 0;
+  for (it = vd->vars.begin(); it != vd->vars.end(); ++it){
+    direcciones.add_var(*it, siguiente_direccion++); ++prev_direcciones;
+  }
+  codegen(nolabel,"alloc",prev_direcciones);
+  return 0;
+}
+
+int ImpCodeGen::visit(StatementList* s) {
   list<Stm*>::iterator it;
   for (it = s->slist.begin(); it != s->slist.end(); ++it) {
     (*it)->accept(this);
   }
-  return;
+  return 0;
 }
 
-void ImpCodeGen::visit(AssignStatement* s) {
+int ImpCodeGen::visit(AssignStatement* s) {
   s->rhs->accept(this);
-
-  return;
+  codegen(nolabel,"store",direcciones.lookup(s->id));
+  return 0;
 }
 
-void ImpCodeGen::visit(PrintStatement* s) {
+int ImpCodeGen::visit(PrintStatement* s) {
   s->e->accept(this);
-
-  return;
+  code << "print" << endl;
+  return 0;
 }
 
-void ImpCodeGen::visit(IfStatement* s) {
+int ImpCodeGen::visit(IfStatement* s) {
   string l1 = next_label();
   string l2 = next_label();
   
   s->cond->accept(this);
-
+  codegen(nolabel,"jmpz",l1);
   s->tbody->accept(this);
-
+  codegen(nolabel,"goto",l2);
+  codegen(l1,"skip");
   if (s->fbody!=NULL) {
     s->fbody->accept(this);
   }
-
+  codegen(l2,"skip");
  
-  return;
+  return 0;
 }
 
-void ImpCodeGen::visit(WhileStatement* s) {
+int ImpCodeGen::visit(WhileStatement* s) {
   string l1 = next_label();
   string l2 = next_label();
 
+  codegen(l1,"skip");
   s->cond->accept(this);
-
+  codegen(nolabel,"jmpz",l2);
   s->body->accept(this);
+  codegen(nolabel,"goto",l1);
+  codegen(l2,"skip");
 
-  return;
+  return 0;
 }
 
-void ImpCodeGen::visit(DoWhileStatement* s) {
+int ImpCodeGen::visit(DoWhileStatement* s) {
   string l1 = next_label();
   string l2 = next_label();
 
+  codegen(l1,"skip");
   s->body->accept(this);
-
   s->cond->accept(this);
+  codegen(nolabel,"jmpz",l2);
+  codegen(nolabel,"goto",l1);
+  codegen(l2,"skip");
 
-  return;
+  return 0;
 }
 
 int ImpCodeGen::visit(BinaryExp* e) {
@@ -134,26 +143,49 @@ int ImpCodeGen::visit(BinaryExp* e) {
   e->right->accept(this);
   string op = "";
   switch(e->op) {
-  case PLUS: op =  "add"; break;
-  case MINUS: op = "sub"; break;
-  case MULT:  op = "mul"; break;
-  case DIV:  op = "div"; break;
-  case LT:  op = "lt"; break;
-  case LTEQ: op = "le"; break;
-  case EQ:  op = "eq"; break;
-  default: cout << "binop " << Exp::binopToString(e->op) << " not implemented" << endl;
+    case PLUS: op =  "add"; break;
+    case MINUS: op = "sub"; break;
+    case MULT:  op = "mul"; break;
+    case DIV:  op = "div"; break;
+    case LT:  op = "lt"; break;
+    case LTEQ: op = "le"; break;
+    case EQ:  op = "eq"; break;
+    case GT:  op = "gt"; break;
+    case GTEQ: op = "ge"; break;
+    case AND: op = "and"; break;
+    case OR: op = "or"; break;
+    default: cout << "binop " << Exp::binopToString(e->op) << " not implemented" << endl;
   }
+  codegen(nolabel, op);
+  return 0;
+}
 
+int ImpCodeGen::visit(UnaryExp* e) {
+  e->e->accept(this);
+  if (e->op == NEG) {
+    codegen(nolabel,"push",0);
+    codegen(nolabel,"swap");
+    codegen(nolabel,"sub");
+  } else {
+    string l1 = next_label();
+    string l2 = next_label();
+    codegen(nolabel,"jmpz",l1);
+    codegen(nolabel,"push", 0);
+    codegen(nolabel,"goto", l2);
+    codegen(l1,"skip", 0);
+    codegen(nolabel,"push", 1);
+    codegen(l2,"skip");
+  }
   return 0;
 }
 
 int ImpCodeGen::visit(NumberExp* e) {
-
+  codegen(nolabel,"push ",e->value);
   return 0;
 }
 
 int ImpCodeGen::visit(IdExp* e) {
-
+  codegen(nolabel,"load",direcciones.lookup(e->id));
   return 0;
 }
 
@@ -167,10 +199,16 @@ int ImpCodeGen::visit(CondExp* e) {
   string l2 = next_label();
  
   e->cond->accept(this);
-
+  codegen(nolabel, "jmpz", l1);
   e->etrue->accept(this);
-
+  codegen(nolabel, "goto", l2);
+  codegen(l1,"skip");
   e->efalse->accept(this);
+  codegen(l2, "skip");
+  return 0;
+}
 
+int ImpCodeGen::visit(BoolExp* e) {
+  codegen(nolabel,"push",e->value?1:0);
   return 0;
 }

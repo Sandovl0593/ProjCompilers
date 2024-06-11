@@ -19,8 +19,8 @@ public:
   enum Type {
     LPAREN=0, RPAREN, PLUS, MINUS, MULT, DIV, EXP, LT, LTEQ, GT, GTEQ, EQ, 
     TPOINTS, NUM, ID, PRINT, CONDEXP, COMMA, SEMICOLON, ASSIGN, 
-    IF, THEN, ELSE, ENDIF, WHILE, DO, ENDWHILE, 
-    FOR, TO, ENDFOR, BREAK, CONTINUE, ERR, END, VAR
+    IF, THEN, ELSE, ENDIF, WHILE, DO, ENDWHILE, ERR, END, VAR, AND, OR, TRUE, FALSE, NOT
+    // FOR, TO, ENDFOR, BREAK, CONTINUE
   };
   static const char* token_names[35]; 
   Type type;
@@ -62,6 +62,7 @@ private:
   StatementList* parseStatementList();
   Stm* parseStatement();
   Exp* parseCExp();
+  Exp* parseBExp();
   Exp* parseExpression();
   Exp* parseTerm();
   Exp* parseFExp();

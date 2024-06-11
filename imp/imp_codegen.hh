@@ -15,16 +15,16 @@
 class ImpCodeGen : public ImpVisitor {
 public:
   void codegen(Program*, string outfname);
-  void visit(Program*);
-  void visit(Body*);
-  void visit(VarDecList*);
-  void visit(VarDec*);
-  void visit(StatementList*);
-  void visit(AssignStatement*);
-  void visit(PrintStatement*);
-  void visit(IfStatement*);
-  void visit(WhileStatement*);
-  void visit(DoWhileStatement*);
+  int visit(Program*);
+  int visit(Body*);
+  int visit(VarDecList*);
+  int visit(VarDec*);
+  int visit(StatementList*);
+  int visit(AssignStatement*);
+  int visit(PrintStatement*);
+  int visit(IfStatement*);
+  int visit(WhileStatement*);
+  int visit(DoWhileStatement*);
   // void visit(ForStatement*);
 
   
@@ -33,13 +33,15 @@ public:
   int visit(IdExp* e);
   int visit(ParenthExp* e);
   int visit(CondExp* e);
+  int visit(UnaryExp* e);
+  int visit(BoolExp* e);
 
 private:
   std::ostringstream code;
   string nolabel;
   int current_label;
   Environment<int> direcciones;
-  int siguiente_direccion;
+  int siguiente_direccion, mem_locals;
   void codegen(string label, string instr);
   void codegen(string label, string instr, int arg);
   void codegen(string label, string instr, string jmplabel);

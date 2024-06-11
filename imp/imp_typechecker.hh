@@ -14,6 +14,11 @@ public:
   ImpTypeChecker();
 private:
   Environment<ImpType> env;
+  ImpType booltype;
+  ImpType inttype;
+  int sp, max_sp;
+  void sp_incr(int n);
+  void sp_decr(int n);
 
 public:
   void typecheck(Program*);
@@ -34,6 +39,8 @@ public:
   ImpType visit(IdExp* e);
   ImpType visit(ParenthExp* e);
   ImpType visit(CondExp* e);
+  ImpType visit(UnaryExp* e);
+  ImpType visit(BoolExp* e);
 };
 
 
