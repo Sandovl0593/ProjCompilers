@@ -1,4 +1,4 @@
-var int x, y;
+var int x, y; // comentario
 x = 12;
 y = x + 3;
 print(ifexp(x > y,100,200)+2)

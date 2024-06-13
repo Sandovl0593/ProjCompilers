@@ -96,7 +96,7 @@ int ImpCodeGen::visit(PrintStatement* s) {
 int ImpCodeGen::visit(IfStatement* s) {
   string l1 = next_label();
   string l2 = next_label();
-  
+
   s->cond->accept(this);
   codegen(nolabel,"jmpz",l1);
   s->tbody->accept(this);
@@ -106,7 +106,7 @@ int ImpCodeGen::visit(IfStatement* s) {
     s->fbody->accept(this);
   }
   codegen(l2,"skip");
- 
+
   return 0;
 }
 
@@ -114,12 +114,18 @@ int ImpCodeGen::visit(WhileStatement* s) {
   string l1 = next_label();
   string l2 = next_label();
 
+  in_Loop = true;
+  loop_repeat_label = l1;
+  loop_finish_label = l2;
+  
   codegen(l1,"skip");
   s->cond->accept(this);
   codegen(nolabel,"jmpz",l2);
   s->body->accept(this);
   codegen(nolabel,"goto",l1);
   codegen(l2,"skip");
+  
+  in_Loop = false;
 
   return 0;
 }
@@ -180,7 +186,7 @@ int ImpCodeGen::visit(UnaryExp* e) {
 }
 
 int ImpCodeGen::visit(NumberExp* e) {
-  codegen(nolabel,"push ",e->value);
+  codegen(nolabel,"push",e->value);
   return 0;
 }
 

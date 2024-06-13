@@ -2,7 +2,7 @@
 
 #include "imp_parser.hh"
 
-const char* Token::token_names[35] = { 
+const char* Token::token_names[36] = { 
   "LPAREN", "RPAREN", "PLUS", "MINUS","MULT","DIV","EXP", "LT", "LTEQ", "GT", "GTEQ", "EQ",
   "TPOINTS", "NUM", "ID", "PRINT", "CONDEXP", "COMMA", "SEMICOLON", "ASSIGN",
   "IF", "THEN", "ELSE","ENDIF", "WHILE", "DO", "ENDWHILE", "ERR", "END", "VAR", "AND", "OR", "TRUE", "FALSE", "NOT"
@@ -91,7 +91,15 @@ Token* Scanner::nextToken() {
         if (c == '*') token = new Token(Token::EXP);
         else { rollBack(); token = new Token(Token::MULT); }
         break;
-      case '/': token = new Token(Token::DIV); break;
+      case '/':
+        if (c == '/') {
+          while ((c = nextChar()) != '\n' && c != '\0');
+          return nextToken();
+        } else {
+          rollBack();
+          token = new Token(Token::DIV);
+          break;
+        }
       case '>': 
         c = nextChar();
         if (c == '=') token = new Token(Token::GTEQ);

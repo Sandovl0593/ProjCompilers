@@ -1,15 +1,21 @@
-alloc 1
-push  100
+alloc 4
+push 100
 store 0
+push 40
+store 1
+load 1
+push 3
+add
+store 2
 load 0
-push  500
+push 500
 lt
 jmpz L0
-alloc 1
-push  15
-store 1
-push  500
-store 0
+alloc 4
+push 15
+store 4
+push 500
+store 5
 load 0
 load 1
 add

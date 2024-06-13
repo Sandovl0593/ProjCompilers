@@ -42,6 +42,10 @@ private:
   int current_label;
   Environment<int> direcciones;
   int siguiente_direccion, mem_locals;
+  string loop_repeat_label;
+  string loop_finish_label;
+  bool in_Loop;
+
   void codegen(string label, string instr);
   void codegen(string label, string instr, int arg);
   void codegen(string label, string instr, string jmplabel);

@@ -18,11 +18,11 @@ class Token {
 public:
   enum Type {
     LPAREN=0, RPAREN, PLUS, MINUS, MULT, DIV, EXP, LT, LTEQ, GT, GTEQ, EQ, 
-    TPOINTS, NUM, ID, PRINT, CONDEXP, COMMA, SEMICOLON, ASSIGN, 
+    TPOINTS, NUM, ID, PRINT, CONDEXP, COMMA, SEMICOLON, ASSIGN,
     IF, THEN, ELSE, ENDIF, WHILE, DO, ENDWHILE, ERR, END, VAR, AND, OR, TRUE, FALSE, NOT
     // FOR, TO, ENDFOR, BREAK, CONTINUE
   };
-  static const char* token_names[35]; 
+  static const char* token_names[36]; 
   Type type;
   string lexema;
   Token(Type);
