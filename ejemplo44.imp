@@ -1,11 +1,18 @@
-var int x, y, qq, ww;
+var int x, y, qq;
+var int ww;
 x = 100;
 y = 40;
+qq = 90;
 if x < 500 then
   var int r, t, o, u;
-  r = 15;
+  r = 15; // Hola
   t = 500;
-  print(x+y)
+  print(x+y+qq)
+else
+  var int k, l;
+  k = 100;
+  l = 200;
+  print(k+l)
 endif;
 print(x)
 

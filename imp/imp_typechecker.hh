@@ -21,7 +21,7 @@ private:
   void sp_decr(int n);
 
 public:
-  void typecheck(Program*);
+  int typecheck(Program*); // Retorne el sp_max
   void visit(Program*);
   void visit(Body*);
   void visit(VarDecList*);

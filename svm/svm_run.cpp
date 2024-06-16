@@ -20,6 +20,7 @@ int main(int argc, const char* argv[]) {
       cout << "File name missing" << endl;
       exit(1);
     }
+    
     cout << "Reading program from file " << argv[1] << endl;
     std::ifstream t(argv[1]);
     std::stringstream buffer;

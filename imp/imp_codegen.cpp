@@ -26,16 +26,19 @@ string ImpCodeGen::next_label() {
 }
 
 void ImpCodeGen::codegen(Program* p, string outfname) {
+  checker = new ImpTypeChecker();
   nolabel = "";
   current_label = 0;
-  siguiente_direccion = 0;
-  mem_locals = 0;
+  siguiente_direccion = 1;
+  mem_locals = checker->typecheck(p);
+  codegen(nolabel,"alloc",this->mem_locals);
   p->accept(this);
   ofstream outfile;
   outfile.open(outfname);
   outfile << code.str();
   outfile.close();
   cout << "Memoria variables locales: " << mem_locals << endl;
+  
   return;
 }
 
@@ -45,13 +48,10 @@ int ImpCodeGen::visit(Program* p) {
 }
 
 int ImpCodeGen::visit(Body * b) {
-  int dir = siguiente_direccion;
   direcciones.add_level();
   b->var_decs->accept(this);
   b->slist->accept(this);
   direcciones.remove_level();
-  if (siguiente_direccion > mem_locals) mem_locals = siguiente_direccion;
-  siguiente_direccion = dir;
   return 0;
 }
 
@@ -69,7 +69,6 @@ int ImpCodeGen::visit(VarDec* vd) {
   for (it = vd->vars.begin(); it != vd->vars.end(); ++it){
     direcciones.add_var(*it, siguiente_direccion++); ++prev_direcciones;
   }
-  codegen(nolabel,"alloc",prev_direcciones);
   return 0;
 }
 

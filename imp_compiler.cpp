@@ -35,8 +35,6 @@ int main(int argc, const char* argv[]) {
   
   printer.print(program);
   
-  cout << endl << "Type checking:" << endl;
-  checker.typecheck(program);
   
   cout << endl << "Run program:" << endl;
   interpreter.interpret(program);

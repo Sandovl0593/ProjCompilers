@@ -11,9 +11,11 @@
 #include "imp.hh"
 #include "imp_visitor.hh"
 #include "../environment.hh"
+#include "imp_typechecker.hh"
 
 class ImpCodeGen : public ImpVisitor {
 public:
+
   void codegen(Program*, string outfname);
   int visit(Program*);
   int visit(Body*);
@@ -42,6 +44,7 @@ private:
   int current_label;
   Environment<int> direcciones;
   int siguiente_direccion, mem_locals;
+  ImpTypeChecker *checker;
   string loop_repeat_label;
   string loop_finish_label;
   bool in_Loop;

@@ -19,11 +19,11 @@ ImpTypeChecker::ImpTypeChecker():inttype(),booltype() {
   sp  = max_sp = 0;
 }
 
-void ImpTypeChecker::typecheck(Program* p) {
+int ImpTypeChecker::typecheck(Program* p) {
   env.clear();
   p->accept(this);
   cout << "Max stack size: " << max_sp << endl;
-  return;
+  return max_sp;
 }
 
 void ImpTypeChecker::visit(Program* p) {
@@ -32,10 +32,13 @@ void ImpTypeChecker::visit(Program* p) {
 }
 
 void ImpTypeChecker::visit(Body* b) {
+  int var = sp;
   env.add_level();
   b->var_decs->accept(this);
   b->slist->accept(this);
-  env.remove_level();  
+  env.remove_level();
+  if(sp > max_sp) max_sp = sp;
+  sp = var;
   return;
 }
 
@@ -57,6 +60,7 @@ void ImpTypeChecker::visit(VarDec* vd) {
   list<string>::iterator it;
   for (it = vd->vars.begin(); it != vd->vars.end(); ++it) {
     env.add_var(*it, type);
+    sp_incr(1);
   }   
   return;
 }
@@ -76,7 +80,6 @@ void ImpTypeChecker::visit(AssignStatement* s) {
     cout << "Variable " << s->id << " undefined" << endl;
     exit(0);
   }
-  sp_decr(1);
   ImpType var_type = env.lookup(s->id);  
   if (!type.match(var_type)) {
     cout << "Tipo incorrecto en Assign a " << s->id << endl;
@@ -87,13 +90,11 @@ void ImpTypeChecker::visit(AssignStatement* s) {
 
 void ImpTypeChecker::visit(PrintStatement* s) {
   s->e->accept(this);
-  sp_decr(1);
   return;
 }
 
 void ImpTypeChecker::visit(IfStatement* s) {
   s->cond->accept(this);
-  sp_decr(1);
   s->tbody->accept(this);
   if (s->fbody != NULL)
     s->fbody->accept(this);
@@ -102,15 +103,13 @@ void ImpTypeChecker::visit(IfStatement* s) {
 
 void ImpTypeChecker::visit(WhileStatement* s) {
   s->cond->accept(this);
-  sp_decr(1);
   s->body->accept(this);
- return;
+  return;
 }
 
 void ImpTypeChecker::visit(DoWhileStatement* s) {
   s->body->accept(this);
   s->cond->accept(this);
-  sp_decr(1);
   return;
 }
 
@@ -140,7 +139,6 @@ ImpType ImpTypeChecker::visit(BinaryExp* e) {
       result = booltype;
       break;
   }
-  sp_decr(1);
   return result;
 }
 
@@ -157,12 +155,10 @@ ImpType ImpTypeChecker::visit(UnaryExp* e) {
 }
 
 ImpType ImpTypeChecker::visit(NumberExp* e) {
-  sp_incr(1);
   return inttype;
 }
 
 ImpType ImpTypeChecker::visit(IdExp* e) {
-  sp_incr(1);
   if (env.check(e->id))
     return env.lookup(e->id);
   else {
@@ -182,7 +178,6 @@ ImpType ImpTypeChecker::visit(CondExp* e) {
     cout << "Tipo en ifexp debe de ser bool" << endl;
     exit(0);
   }
-  sp_decr(1);
   int sp_start = sp;
   ImpType ttype =  e->etrue->accept(this);
   sp = sp_start;
@@ -194,6 +189,5 @@ ImpType ImpTypeChecker::visit(CondExp* e) {
 }
 
 ImpType ImpTypeChecker::visit(BoolExp* e) {
-  sp_incr(1);
   return booltype;
 }

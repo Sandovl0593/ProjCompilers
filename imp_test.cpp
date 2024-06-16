@@ -2,10 +2,11 @@
 #include <iostream>
 #include <iostream>
 
-#include "imp.hh"
-#include "imp_parser.hh"
-#include "imp_printer.hh"
-#include "imp_interpreter.hh"
+#include "imp/imp.hh"
+#include "imp/imp_parser.hh"
+#include "imp/imp_printer.hh"
+#include "imp/imp_interpreter.hh"
+
 
 int main(int argc, const char* argv[]) {
 
