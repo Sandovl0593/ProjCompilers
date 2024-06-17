@@ -92,8 +92,10 @@ Token* Scanner::nextToken() {
         else { rollBack(); token = new Token(Token::MULT); }
         break;
       case '/':
+        c = nextChar();
         if (c == '/') {
-          while ((c = nextChar()) != '\n' && c != '\0');
+          c = nextChar();
+          while (c != '\n' && c != '\0') c = nextChar();
           return nextToken();
         } else {
           rollBack();
