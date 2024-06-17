@@ -21,7 +21,6 @@ int ImpPrinter::visit(VarDecList* s) {
   list<VarDec*>::iterator it;
   for (it = s->vdlist.begin(); it != s->vdlist.end(); ++it) {
     (*it)->accept(this);
-    cout << ";" << endl;
   }  
   return 0;
 }
@@ -35,6 +34,10 @@ int ImpPrinter::visit(VarDec* vd) {
     first = false;
     cout << *it;
   }
+  if (vd->comment != "") 
+    cout << "; //" << vd->comment << endl;
+  else
+    cout << ";" << endl;
   return 0;
 }
 
@@ -43,7 +46,12 @@ int ImpPrinter::visit(StatementList* s) {
   list<Stm*>::iterator it;
   for (it = s->slist.begin(); it != s->slist.end(); ++it) {
     (*it)->accept(this);
-    cout << ";" << endl;
+    if (s->comments.front() != "") {
+      cout << "; //" << s->comments.front() << endl;
+    } else {
+      cout << ";" << endl;
+    }
+    s->comments.pop_front();
   }
   cout << "}" << endl;
   return 0;

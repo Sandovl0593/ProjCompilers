@@ -4,7 +4,7 @@
 
 const char* Token::token_names[36] = { 
   "LPAREN", "RPAREN", "PLUS", "MINUS","MULT","DIV","EXP", "LT", "LTEQ", "GT", "GTEQ", "EQ",
-  "TPOINTS", "NUM", "ID", "PRINT", "CONDEXP", "COMMA", "SEMICOLON", "ASSIGN",
+  "TPOINTS", "NUM", "ID", "PRINT", "CONDEXP", "COMMA", "SEMICOLON", "ASSIGN", "COMMENT",
   "IF", "THEN", "ELSE","ENDIF", "WHILE", "DO", "ENDWHILE", "ERR", "END", "VAR", "AND", "OR", "TRUE", "FALSE", "NOT"
   // "FOR", "TO", "ENDFOR", "BREAK", "CONTINUE"
 };
@@ -96,7 +96,7 @@ Token* Scanner::nextToken() {
         if (c == '/') {
           c = nextChar();
           while (c != '\n' && c != '\0') c = nextChar();
-          return nextToken();
+          return new Token(Token::COMMENT, getLexema());
         } else {
           rollBack();
           token = new Token(Token::DIV);
@@ -246,7 +246,10 @@ VarDec* Parser::parseVarDec() {
       vars.push_back(var);
     }
     if (!match(Token::SEMICOLON)) parserError("Expecting semicolon at end of var declaration");
-    vd = new VarDec(type,vars);
+    if (match(Token::COMMENT)) {
+      vd = new VarDec(type,vars,previous->lexema.substr(2));
+    } else
+      vd = new VarDec(type,vars);
   }
   return vd;
 }
@@ -267,7 +270,10 @@ StatementList* Parser::parseStatementList() {
   StatementList* p = new StatementList();
   p->add(parseStatement());
   while(match(Token::SEMICOLON)) {
-    p->add(parseStatement());
+    if (match(Token::COMMENT)) {
+      p->add(parseStatement(),previous->lexema.substr(2));
+    } else
+      p->add(parseStatement());
   }
   return p;
 }

@@ -84,14 +84,15 @@ ImpType UnaryExp::accept(TypeVisitor* v) {
   return v->visit(this);
 }
 
-AssignStatement::AssignStatement(string id, Exp* e):id(id), rhs(e) { }
+AssignStatement::AssignStatement(string id, Exp* e):id(id),rhs(e) { }
 PrintStatement::PrintStatement(Exp* e):e(e) { }
 IfStatement::IfStatement(Exp* c,Body *tb, Body* fb):cond(c),tbody(tb), fbody(fb) { }
 WhileStatement::WhileStatement(Exp* c,Body *b):cond(c),body(b) { }
 DoWhileStatement::DoWhileStatement(Exp* c,Body *b):cond(c),body(b) { }
 
 StatementList::StatementList():slist() {}
-VarDec::VarDec(string type, list<string> vars):type(type), vars(vars) {}
+VarDec::VarDec(string type, list<string> vars):type(type),vars(vars) {}
+VarDec::VarDec(string type, list<string> vars, string comment):type(type),vars(vars), comment(comment) {}
 VarDecList::VarDecList():vdlist() {}
 Body::Body(VarDecList* vdl, StatementList* sl):var_decs(vdl), slist(sl) {}
 Program::Program(Body* b):body(b) {}
@@ -133,7 +134,14 @@ void DoWhileStatement::accept(ImpVisitor* v) {
   v->visit(this);
   return; 
 }
-void StatementList::add(Stm* s) { slist.push_back(s);  }
+
+void StatementList::add(Stm* s) {
+  slist.push_back(s); comments.push_back("");
+};
+void StatementList::add(Stm* s, string comment) {
+  slist.push_back(s); comments.push_back(comment);
+};
+
 void StatementList::accept(ImpVisitor* v) {
   v->visit(this);
   return; 

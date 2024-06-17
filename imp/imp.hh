@@ -116,7 +116,7 @@ public:
 
 class PrintStatement : public Stm {
 public:
-  Exp* e;  
+  Exp* e;
   PrintStatement(Exp* e);
   void accept(ImpVisitor* v);
   void accept(TypeVisitor* v);
@@ -154,33 +154,13 @@ public:
 };
 
 
-// class ForStatement : public Stm {
-// public:
-//   string id;
-//   Exp* begin, *end;
-//   Body *body;
-//   ForStatement(string id, Exp* begin, Exp* end, Body* body);
-//   void accept(ImpVisitor* v);
-//   void accept(ImpVisitor* v);
-//   ~ForStatement();
-// };
-
-// class BreakStatement : public Stm {
-// public:
-//     void accept(ImpVisitor* v);
-// };
-
-// class ContinueStatement : public Stm {
-// public:
-//     void accept(ImpVisitor* v);
-// };
-
-
 class StatementList {
 public:
   list<Stm*> slist;
+  list<string> comments;
   StatementList();
   void add(Stm* s);
+  void add(Stm* s, string comment);
   void accept(ImpVisitor* v);
   void accept(TypeVisitor* v);
   ~StatementList();
@@ -190,7 +170,9 @@ class VarDec {
 public:
   string type;
   list<string> vars;
+  string comment;
   VarDec(string type, list<string> vars);
+  VarDec(string type, list<string> vars, string comment);
   void accept(ImpVisitor* v);
   void accept(TypeVisitor* v);
   ~VarDec();
