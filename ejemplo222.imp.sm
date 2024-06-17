@@ -9,6 +9,19 @@ push 10
 store 1
 push 23
 store 3
+L2: skip
+load 3
+push 1
+sub
+store 3
+load 3
+print
+load 3
+push 20
+gt
+jmpz L3
+goto L2
+L3: skip
 load 1
 push 2
 mul

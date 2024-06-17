@@ -101,6 +101,10 @@ int ImpInterpreter::visit(BinaryExp* e) {
     break;
   case LT: result = (v1 < v2) ? 1 : 0; break;
   case LTEQ: result = (v1 <= v2) ? 1: 0; break;
+  case GT: result = (v1 > v2) ? 1: 0; break;
+  case GTEQ: result = (v1 >= v2) ? 1: 0; break;
+  case AND: result = (v1 && v2) ? 1: 0; break;
+  case OR: result = (v1 || v2) ? 1: 0; break;
   case EQ: result = (v1 == v2) ? 1 : 0; break;
   }
   return result;
