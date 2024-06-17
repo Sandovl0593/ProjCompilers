@@ -1,12 +1,13 @@
 var int x, y, z;
 x = 4;
 if x < 5 then
-  var bool x;
+  var bool s;
   x = 10;
   z = 23;
   y = x*2
 else
-  y = x*3
+  var bool t, u;
+  t = false
 endif;
 print(y)
 

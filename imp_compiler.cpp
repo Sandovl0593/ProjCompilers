@@ -31,7 +31,7 @@ int main(int argc, const char* argv[]) {
   ImpInterpreter interpreter;
   ImpTypeChecker checker;
 
-  ImpCodeGen cg;
+  ImpCodeGen cg(&checker);
   
   printer.print(program);
   

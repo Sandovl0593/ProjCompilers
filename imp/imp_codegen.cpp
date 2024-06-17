@@ -1,5 +1,13 @@
 #include "imp_codegen.hh"
 
+ImpCodeGen::ImpCodeGen(ImpTypeChecker *checker) {
+  this->checker = checker;
+  nolabel = "";
+  current_label = 0;
+  siguiente_direccion = 1;
+  mem_locals = 0;
+}
+
 void ImpCodeGen::codegen(string label, string instr) {
   if (label !=  nolabel)
     code << label << ": ";
@@ -26,10 +34,6 @@ string ImpCodeGen::next_label() {
 }
 
 void ImpCodeGen::codegen(Program* p, string outfname) {
-  checker = new ImpTypeChecker();
-  nolabel = "";
-  current_label = 0;
-  siguiente_direccion = 1;
   mem_locals = checker->typecheck(p);
   codegen(nolabel,"alloc",this->mem_locals);
   p->accept(this);
@@ -65,9 +69,8 @@ int ImpCodeGen::visit(VarDecList* s) {
 
 int ImpCodeGen::visit(VarDec* vd) {
   list<string>::iterator it;
-  int prev_direcciones = 0;
   for (it = vd->vars.begin(); it != vd->vars.end(); ++it){
-    direcciones.add_var(*it, siguiente_direccion++); ++prev_direcciones;
+    direcciones.add_var(*it, siguiente_direccion++);
   }
   return 0;
 }
@@ -112,10 +115,6 @@ int ImpCodeGen::visit(IfStatement* s) {
 int ImpCodeGen::visit(WhileStatement* s) {
   string l1 = next_label();
   string l2 = next_label();
-
-  in_Loop = true;
-  loop_repeat_label = l1;
-  loop_finish_label = l2;
   
   codegen(l1,"skip");
   s->cond->accept(this);
@@ -123,8 +122,6 @@ int ImpCodeGen::visit(WhileStatement* s) {
   s->body->accept(this);
   codegen(nolabel,"goto",l1);
   codegen(l2,"skip");
-  
-  in_Loop = false;
 
   return 0;
 }

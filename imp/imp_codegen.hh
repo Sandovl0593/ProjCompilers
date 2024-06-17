@@ -16,6 +16,8 @@
 class ImpCodeGen : public ImpVisitor {
 public:
 
+  ImpCodeGen(ImpTypeChecker *checker);
+
   void codegen(Program*, string outfname);
   int visit(Program*);
   int visit(Body*);
@@ -45,10 +47,7 @@ private:
   Environment<int> direcciones;
   int siguiente_direccion, mem_locals;
   ImpTypeChecker *checker;
-  string loop_repeat_label;
-  string loop_finish_label;
-  bool in_Loop;
-
+  
   void codegen(string label, string instr);
   void codegen(string label, string instr, int arg);
   void codegen(string label, string instr, string jmplabel);
