@@ -1,4 +1,6 @@
 var int x, y; // comentario
-x = 12;
-y = x + 3;
-print(ifexp(x > y,100,200)+2)
+x = 12;  
+y = x + 3; // otro comentario
+print(ifexp(x > y,100,200)+2);
+// comentario mas
+print(y + 1)

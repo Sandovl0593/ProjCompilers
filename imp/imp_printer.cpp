@@ -24,7 +24,7 @@ int ImpPrinter::visit(VarDecList* s) {
   }  
   return 0;
 }
-			  
+
 int ImpPrinter::visit(VarDec* vd) {
   bool first = true;
   cout << "var " << vd->type << " ";
@@ -35,7 +35,7 @@ int ImpPrinter::visit(VarDec* vd) {
     cout << *it;
   }
   if (vd->comment != "") 
-    cout << "; //" << vd->comment << endl;
+    cout << "; //" << vd->comment;
   else
     cout << ";" << endl;
   return 0;
@@ -46,12 +46,12 @@ int ImpPrinter::visit(StatementList* s) {
   list<Stm*>::iterator it;
   for (it = s->slist.begin(); it != s->slist.end(); ++it) {
     (*it)->accept(this);
+    s->comments.pop_front();
     if (s->comments.front() != "") {
-      cout << "; //" << s->comments.front() << endl;
+      cout << "; //" << s->comments.front();
     } else {
       cout << ";" << endl;
     }
-    s->comments.pop_front();
   }
   cout << "}" << endl;
   return 0;

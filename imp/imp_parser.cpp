@@ -96,7 +96,8 @@ Token* Scanner::nextToken() {
         if (c == '/') {
           c = nextChar();
           while (c != '\n' && c != '\0') c = nextChar();
-          return new Token(Token::COMMENT, getLexema());
+          token = new Token(Token::COMMENT, getLexema());
+          break;
         } else {
           rollBack();
           token = new Token(Token::DIV);
